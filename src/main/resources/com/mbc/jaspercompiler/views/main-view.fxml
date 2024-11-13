@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="455.0" prefWidth="600.0" style="-fx-background-color: #314e52; -fx-background-radius: 0px;" stylesheets="@../css/main-style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mbc.jaspercompiler.controllers.MainController">
+   <children>
+      <Text fill="WHITE" layoutX="14.0" layoutY="40.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Jasper Report Compiler">
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font>
+      </Text>
+      <Text fill="WHITE" layoutX="14.0" layoutY="79.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Select the source jrxml directory">
+         <font>
+            <Font name="System Bold" size="13.0" />
+         </font>
+      </Text>
+      <HBox alignment="CENTER_LEFT" layoutX="14.0" layoutY="91.0" prefHeight="35.0" prefWidth="384.0" style="-fx-background-color: #497075; -fx-background-radius: 0px;">
+         <children>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0">
+               <font>
+                  <Font size="11.0" />
+               </font>
+            </Text>
+            <Label fx:id="jrxmlFilePathLabel" text=".........." textFill="WHITE">
+               <font>
+                  <Font size="11.0" />
+               </font>
+            </Label>
+         </children>
+         <padding>
+            <Insets left="10.0" />
+         </padding>
+      </HBox>
+      <Button fx:id="jrxmlFileChooser" layoutX="413.0" layoutY="91.0" mnemonicParsing="false" onMouseClicked="#clickOnJrxmlFileChooser" prefWidth="105.0" styleClass="choose-button" text="Choose" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="13.0" />
+         </font>
+         <effect>
+            <DropShadow>
+               <color>
+                  <Color red="0.1411764770746231" green="0.16862745583057404" blue="0.1725490242242813" />
+               </color>
+            </DropShadow>
+         </effect>
+      </Button>
+      <Text fill="WHITE" layoutX="14.0" layoutY="159.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Select the output jasper directory">
+         <font>
+            <Font name="System Bold" size="13.0" />
+         </font>
+      </Text>
+      <HBox fx:id="jasperPathTextBox" alignment="CENTER_LEFT" layoutX="14.0" layoutY="171.0" prefHeight="35.0" prefWidth="384.0" style="-fx-background-color: #497075; -fx-background-radius: 0px;">
+         <padding>
+            <Insets left="10.0" />
+         </padding>
+         <children>
+            <Label fx:id="jasperFilePathLabel" text=".........." textFill="WHITE">
+               <font>
+                  <Font size="11.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <Button fx:id="jasperFileChooser" layoutX="413.0" layoutY="171.0" mnemonicParsing="false" onMouseClicked="#clickOnJasperFileChooser" prefWidth="105.0" styleClass="choose-button" text="Choose" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="13.0" />
+         </font>
+         <effect>
+            <DropShadow>
+               <color>
+                  <Color red="0.1411764770746231" green="0.16862745583057404" blue="0.1725490242242813" />
+               </color>
+            </DropShadow>
+         </effect>
+      </Button>
+      <Button fx:id="compileButton" layoutX="14.0" layoutY="380.0" mnemonicParsing="false" onMouseClicked="#clickOnCompileButton" prefHeight="35.0" prefWidth="424.0" styleClass="compile-button" text="Compile Report" textFill="WHITE">
+         <effect>
+            <DropShadow>
+               <color>
+                  <Color red="0.1393762230873108" green="0.1684129238128662" blue="0.17105263471603394" />
+               </color>
+            </DropShadow>
+         </effect></Button>
+      <Button fx:id="closeButton" layoutX="449.0" layoutY="380.0" mnemonicParsing="false" onMouseClicked="#clickOnCloseButton" prefHeight="35.0" prefWidth="138.0" styleClass="close-button" text="Close" textFill="WHITE">
+         <effect>
+            <DropShadow>
+               <color>
+                  <Color red="0.1411764770746231" green="0.16862745583057404" blue="0.1725490242242813" />
+               </color>
+            </DropShadow>
+         </effect></Button>
+      <Text fill="WHITE" layoutX="146.0" layoutY="438.0" strokeType="OUTSIDE" strokeWidth="0.0" text="2024 - MBC Software Development Centre (Thant Zin Aung)">
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Text>
+      <TextField fx:id="fontNameTextField" layoutX="14.0" layoutY="247.0" prefWidth="220.0" style="-fx-border-radius: 0px; -fx-background-radius: 0px;" styleClass="fontname-textfield" />
+      <Text fill="WHITE" layoutX="14.0" layoutY="236.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Enter font name">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Text>
+      <Text fill="WHITE" layoutX="14.0" layoutY="311.0" strokeType="OUTSIDE" strokeWidth="0.0" text="High Performance Mode">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Text>
+      <HBox fx:id="highPerformanceButton" layoutX="14.0" layoutY="323.0" onMouseClicked="#clickOnHighPerformanceButton" prefHeight="15.0" prefWidth="40.0" style="-fx-background-color: transparent; -fx-background-radius: 0px; -fx-border-radius: 0px; -fx-border-width: 1px; -fx-border-style: solid; -fx-border-color: white;">
+         <children>
+            <HBox fx:id="highPerformanceToggle" prefHeight="100.0" prefWidth="20.0" style="-fx-background-color: white; -fx-background-radius: 0px;" />
+         </children>
+      </HBox>
+      <Text fill="WHITE" layoutX="14.0" layoutY="353.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Enabling high performance mode will be consumed all the resources (cpu, ram, gpu if available) of your device.">
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Text>
+      <Label fx:id="highPerformanceEnableLabel" layoutX="59.0" layoutY="323.0" text="Enabled" textFill="#00ff04" visible="false">
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Label>
+      <Text fill="WHITE" layoutX="247.0" layoutY="236.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Recursive Mode">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Text>
+      <HBox fx:id="recursiveModeButton" layoutX="247.0" layoutY="257.0" onMouseClicked="#clickOnRecursiveButton" prefHeight="15.0" prefWidth="40.0" style="-fx-background-color: transparent; -fx-background-radius: 0px; -fx-border-radius: 0px; -fx-border-width: 1px; -fx-border-style: solid; -fx-border-color: white;">
+         <children>
+            <HBox fx:id="recursiveModeToggle" prefHeight="100.0" prefWidth="20.0" style="-fx-background-color: white; -fx-background-radius: 0px;" />
+         </children>
+      </HBox>
+      <Text fill="WHITE" layoutX="300.0" layoutY="261.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Enabling this mode will be discoverd all jrxml files from subdirectories and compiled all of those files" wrappingWidth="257.8330078125">
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Text>
+      <Label fx:id="recursiveEnableLabel" layoutX="249.0" layoutY="275.0" text="Enabled" textFill="#00ff04" visible="false">
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Label>
+   </children>
+   <effect>
+      <DropShadow />
+   </effect>
+</AnchorPane>

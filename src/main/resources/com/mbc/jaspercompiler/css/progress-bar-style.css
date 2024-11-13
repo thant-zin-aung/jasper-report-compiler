@@ -1,0 +1,20 @@
+.custom-progress-bar {
+    -fx-accent: white;
+    -fx-border-radius: 0px;
+    -fx-background-radius: 0px;
+}
+
+.progress-bar .bar {
+    -fx-background-radius: 0px;
+}
+
+.progress-bar .track {
+    -fx-background-color: #497075;
+    -fx-background-radius: 0px;
+}
+
+.cancel-button:hover {
+    -fx-cursor: hand;
+    -fx-scale-x: 1.05px;
+    -fx-scale-y: 1.05px;
+}

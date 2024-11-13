@@ -1,0 +1,30 @@
+
+.choose-button {
+    -fx-background-color: #497075;
+    -fx-pref-height: 35;
+    -fx-background-radius: 0px;
+}
+.choose-button:hover {
+    -fx-cursor: hand;
+    -fx-scale-x: 1.01px;
+    -fx-scale-y: 1.05px;
+}
+
+.compile-button, .close-button {
+    -fx-background-color: #497075;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-radius: 0px;
+}
+.compile-button:hover, .close-button:hover {
+    -fx-cursor: hand;
+    -fx-scale-x: 1.02px;
+    -fx-scale-y: 1.05px;
+}
+
+.fontname-textfield {
+    -fx-background-color: #497075;
+    -fx-text-fill: white;
+    -fx-pref-height: 35px;
+}
