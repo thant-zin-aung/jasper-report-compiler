@@ -1,6 +1,8 @@
 package com.mbc.jaspercompiler.models;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -12,13 +14,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class JasperCompilerAPI {
+    private String COMPILE_REPORT_LOG_FILE_PATH = "C:\\ProgramData\\JasperReportCompileLogs.txt";
+    private String COMPILE_ERROR_LOG_FILE_PATH = "C:\\ProgramData\\JasperReportCompileErrors.txt";
+    private String COMPILE_FAIL_LIST_LOG_FILE_PATH = "C:\\ProgramData\\JasperReportCompileFailList.txt";
     private int totalFilesToCompile = 0;
     private int currentCompileFilesCount = 0;
     private int successCompileFilesCount = 0;
@@ -39,7 +41,14 @@ public class JasperCompilerAPI {
     private Thread progressBarThread;
     private boolean affectToOriginalJrxmlFiles;
     private boolean highPerformanceMode;
+    private boolean recursiveMode;
     private File jrxmlTempChangeDirectory;
+    private ObservableList<String> recursiveJrxmlFilenameList;
+
+    public JasperCompilerAPI(String jrxmlFilesDirectory) {
+        this(jrxmlFilesDirectory, null);
+        recursiveJrxmlFilenameList = FXCollections.observableArrayList();
+    }
 
     public JasperCompilerAPI(String jrxmlFilesDirectory, String jasperOutputDirectory) {
         this.jrxmlFilesDirectory = jrxmlFilesDirectory;
@@ -62,6 +71,7 @@ public class JasperCompilerAPI {
         this.failCompileLabel = failCompileLabel;
         this.progressBar = progressBar;
         this.percentLabel = percentLabel;
+        recursiveJrxmlFilenameList = FXCollections.observableArrayList();
     }
 
 
@@ -82,6 +92,13 @@ public class JasperCompilerAPI {
         return failCompileFilesCount;
     }
     public Thread getProgressBarThread() { return progressBarThread; }
+    public boolean isRecursiveMode() {
+        return recursiveMode;
+    }
+    public void setRecursiveMode(boolean recursiveMode) {
+        this.recursiveMode = recursiveMode;
+    }
+
     public void setHighPerformanceMode(boolean set) {
         highPerformanceMode = set;
     }
@@ -90,9 +107,16 @@ public class JasperCompilerAPI {
         jrxmlTempChangeDirectory = new File(jrxmlFilesDirectory+"\\jrxml_temp_change");
         jrxmlTempChangeDirectory.mkdir();
         initialize();
-        makeChanges();
-        compileReport();
+        if (recursiveMode) {
+            makeChangesUsingRecursive(new File(jrxmlFilesDirectory));
+            compileUsingRecursive();
+        }
+        else {
+            makeChangesWithoutRecursive();
+            compileReportWithoutRecursive();
+        }
         if ( affectToOriginalJrxmlFiles ) deleteTempChangeDirectory();
+        compilingLabel.setText("All reports compiled successfully...");
     }
 
     private void initialize() {
@@ -100,9 +124,22 @@ public class JasperCompilerAPI {
         currentCompileFilesCount = 0;
         successCompileFilesCount = 0;
         failCompileFilesCount = 0;
+        try {
+            File errorLogFile = new File(COMPILE_ERROR_LOG_FILE_PATH);
+            File failListLogFile = new File(COMPILE_FAIL_LIST_LOG_FILE_PATH);
+            File compileLogFile = new File(COMPILE_REPORT_LOG_FILE_PATH);
+            if (errorLogFile.exists()) errorLogFile.delete();
+            if(failListLogFile.exists()) failListLogFile.delete();
+            if(compileLogFile.exists()) compileLogFile.delete();
+            errorLogFile.createNewFile();
+            failListLogFile.createNewFile();
+            compileLogFile.createNewFile();
+        } catch(IOException ioe) {
+            System.out.println("Failed to create or delete log files... - "+ioe.getMessage());
+        }
     }
 
-    private void compileReport() {
+    private void compileReportWithoutRecursive() {
         startProgressBarThread();
         getListOfJrxmlFilenameList(jrxmlTempChangeDirectory.getAbsolutePath()).forEach(jrxmlChangedFilename -> {
             String sourceJrxmlFilePath = jrxmlTempChangeDirectory.getAbsolutePath()+"\\"+jrxmlChangedFilename;
@@ -113,11 +150,13 @@ public class JasperCompilerAPI {
                 if (!highPerformanceMode) Thread.sleep(new Random().nextInt(3000));
                 JasperCompileManager.compileReportToFile(sourceJrxmlFilePath, targetJasperFilePath);
                 successCompileFilesCount++;
+                logFileExporter(jrxmlChangedFilename, COMPILE_REPORT_LOG_FILE_PATH);
             } catch (JRException e) {
                 failCompileFilesCount++;
-                throw new RuntimeException(e);
+                logFileExporter(jrxmlChangedFilename+" - "+e.getMessage(), COMPILE_ERROR_LOG_FILE_PATH);
+                logFileExporter(jrxmlChangedFilename, COMPILE_FAIL_LIST_LOG_FILE_PATH);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                System.out.println("Error in sleep thread...");
             }
             if ( affectToOriginalJrxmlFiles ) {
                 new File(sourceJrxmlFilePath).delete();
@@ -128,7 +167,32 @@ public class JasperCompilerAPI {
         Platform.runLater(()->compilingLabel.setText("all reports compiled successfully..."));
         updateUI();
     }
-    private void makeChanges() {
+
+    private void compileUsingRecursive() {
+        startProgressBarThread();
+        recursiveJrxmlFilenameList.forEach(this::compileReportAlgorithm);
+        Platform.runLater(()->compilingLabel.setText("all reports compiled successfully..."));
+        updateUI();
+    }
+    private void compileReportAlgorithm(String sourceFilePath) {
+        currentJrxmlCompileFilename = sourceFilePath;
+        String jasperFilePath = sourceFilePath.substring(0, sourceFilePath.lastIndexOf("."))+".jasper";
+        updateUI();
+        try {
+            if (!highPerformanceMode) Thread.sleep(new Random().nextInt(3000));
+            JasperCompileManager.compileReportToFile(sourceFilePath, jasperFilePath);
+            successCompileFilesCount++;
+            logFileExporter(sourceFilePath, COMPILE_REPORT_LOG_FILE_PATH);
+        } catch (JRException e) {
+            failCompileFilesCount++;
+            logFileExporter(sourceFilePath, COMPILE_FAIL_LIST_LOG_FILE_PATH);
+        } catch (InterruptedException e) {
+            System.out.println("Thread Sleep Interrupted Error...");
+        }
+        currentCompileFilesCount++;
+        System.out.println("Compiled reports successfully...");
+    }
+    private void makeChangesWithoutRecursive() {
         if (highPerformanceMode) {
             getListOfJrxmlFilenameList(jrxmlFilesDirectory).parallelStream().forEach(jrxmlFileName -> {
                 try {
@@ -200,11 +264,65 @@ public class JasperCompilerAPI {
         }
     }
 
+    private void makeChangesUsingRecursive(File sourceDirectory) {
+        if ( sourceDirectory.isDirectory() ) {
+            for ( File directory : Objects.requireNonNull(sourceDirectory.listFiles())) {
+                if ( directory.isDirectory() ) {
+                    makeChangesUsingRecursive(directory);
+                } else {
+                    if (isJrxmlFile(directory.getAbsolutePath())) {
+                        recursiveJrxmlFilenameList.add(directory.getAbsolutePath());
+                        recursiveModeMakeChangesAlgorithm(directory.getAbsolutePath());
+                    }
+                }
+            }
+        } else {
+            if (isJrxmlFile(sourceDirectory.getAbsolutePath())) {
+                recursiveJrxmlFilenameList.add(sourceDirectory.getAbsolutePath());
+                recursiveModeMakeChangesAlgorithm(sourceDirectory.getAbsolutePath());
+            }
+        }
+    }
+
+    private void recursiveModeMakeChangesAlgorithm(String path) {
+        try {
+            String jrxmlChangedFilepath = path.substring(0, path.lastIndexOf("."))+"_temp_changed.jrxml";
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(jrxmlChangedFilepath));
+            String readLine = null;
+            while ( (readLine = bufferedReader.readLine()) != null ) {
+                if ( readLine.contains("fontName")) {
+                    readLine = readLine.replaceAll("fontName=\"[^\"]*\"", "fontName=\""+fontName+"\"");
+                }
+                bufferedWriter.write(readLine.concat("\n"));
+            }
+            bufferedReader.close();
+            bufferedWriter.close();
+            new File(path).delete();
+            new File(jrxmlChangedFilepath).renameTo(new File(jrxmlChangedFilepath.replace("_temp_changed.jrxml", ".jrxml")));
+        } catch (IOException e) {
+            System.out.println("Error in make changes."+ e.getMessage());
+            System.out.println("Filepath: "+path);
+            e.printStackTrace();
+        }
+        totalFilesToCompile++;
+        Platform.runLater(()-> totalCompileLabel.setText(String.valueOf(totalFilesToCompile)));
+        Platform.runLater(()-> totalCompileIndexLabel.setText(String.valueOf(totalFilesToCompile)));
+    }
+
+    private boolean isJrxmlFile(String filePath) {
+        try {
+            return filePath.substring(filePath.lastIndexOf(".")).equalsIgnoreCase(".jrxml");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private void deleteTempChangeDirectory() {
         try {
             Files.delete(Paths.get(jrxmlTempChangeDirectory.getAbsolutePath()));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logFileExporter("Fail to delete temp change directory"+jrxmlTempChangeDirectory.getAbsolutePath(), COMPILE_ERROR_LOG_FILE_PATH);
         }
     }
 
@@ -271,5 +389,14 @@ public class JasperCompilerAPI {
         progressBarThread = new Thread(task);
         progressBarThread.setDaemon(true);  // The thread will terminate when the application ends
         progressBarThread.start();
+    }
+
+    private void logFileExporter(String filename, String filePath) {
+        try(BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath,true))) {
+            bufferedWriter.write(filename+"\n");
+        } catch (IOException ioe) {
+            System.out.println("Error while exporting compile log file "+filePath);
+        }
+
     }
 }

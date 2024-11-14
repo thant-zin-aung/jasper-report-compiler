@@ -264,10 +264,16 @@ public class MainController {
 
     private void compileReport() {
         initializeBeforeCompile();
-        jasperCompilerAPI = new JasperCompilerAPI(selectedJrxmlDirectory.getAbsolutePath(), selectedJapserDirectory.getAbsolutePath(),
-                compilingLabel, currentCompiledLabel, totalCompileIndexLabel, compileFilenameLabel, totalCompileLabel, successCompileLabel, failCompileLabel, progressBar, percenLabel);
+        if (recursiveMode) {
+            jasperCompilerAPI = new JasperCompilerAPI(selectedJrxmlDirectory.getAbsolutePath(), null,
+                    compilingLabel, currentCompiledLabel, totalCompileIndexLabel, compileFilenameLabel, totalCompileLabel, successCompileLabel, failCompileLabel, progressBar, percenLabel);
+        } else {
+            jasperCompilerAPI = new JasperCompilerAPI(selectedJrxmlDirectory.getAbsolutePath(), selectedJapserDirectory.getAbsolutePath(),
+                    compilingLabel, currentCompiledLabel, totalCompileIndexLabel, compileFilenameLabel, totalCompileLabel, successCompileLabel, failCompileLabel, progressBar, percenLabel);
+        }
         jasperCompilerAPI.setFontName(fontNameTextField.getText().trim());
         jasperCompilerAPI.setHighPerformanceMode(highPerformanceMode);
+        jasperCompilerAPI.setRecursiveMode(recursiveMode);
         Thread reportCompilerThread = new Thread(() -> {
             jasperCompilerAPI.compileAndExportReport();
         });
